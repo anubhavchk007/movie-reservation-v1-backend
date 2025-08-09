@@ -20,7 +20,6 @@ public class AuthController {
 
     @PostMapping("/signup")
     public AuthResponse register(@RequestBody SignUpRequest request) {
-        boolean ok = true;
         return authService.register(request);
     }
 
