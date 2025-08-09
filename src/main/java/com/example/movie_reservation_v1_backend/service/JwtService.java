@@ -44,10 +44,4 @@ public class JwtService {
         Jws<Claims> jws = parser.parseSignedClaims(token);
         return jws.getPayload().getSubject();
     }
-
-    public String extractRole(String token) {
-        Jws<Claims> jws = parser.parseSignedClaims(token);
-        Object role = jws.getPayload().get("role");
-        return role != null ? role.toString() : null;
-    }
 }

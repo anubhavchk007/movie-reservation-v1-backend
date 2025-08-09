@@ -3,12 +3,10 @@ package com.example.movie_reservation_v1_backend.service;
 import com.example.movie_reservation_v1_backend.entity.Show;
 import com.example.movie_reservation_v1_backend.repository.ShowRepository;
 import jakarta.annotation.PostConstruct;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
