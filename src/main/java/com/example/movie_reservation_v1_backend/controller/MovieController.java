@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api/movies")
 public class MovieController {
 
     private final MovieService movieService;
@@ -19,45 +20,45 @@ public class MovieController {
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("movies")
+    @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
     public MovieResponse createMovie(@RequestBody MovieRequest movieRequest) {
         return movieService.createMovie(movieRequest);
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("movies/all")
+    @GetMapping("/all")
     public List<MovieResponse> getAllMovies() {
         return movieService.getAllMovies();
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("movies")
+    @GetMapping("/all/title")
     public List<MovieResponse> getMoviesByTitle(@RequestParam String title) {
         return movieService.getMovieByTitle(title);
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("movies/genre/{genre}")
-    public List<MovieResponse> getAllMoviesByGenre(@PathVariable String genre) {
+    @GetMapping("/all/genre")
+    public List<MovieResponse> getAllMoviesByGenre(@RequestParam String genre) {
         return movieService.getAllMoviesByGenre(genre);
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("movies/{id}")
+    @GetMapping("/{id}")
     public MovieResponse getMovieById(@PathVariable String id) {
         return movieService.getMovieById(id);
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @PutMapping("movies/{id}")
+    @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public MovieResponse updateMovieById(@PathVariable String id, @RequestBody MovieRequest movieRequest) {
         return movieService.updateMovieById(id, movieRequest);
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @DeleteMapping("movies/{id}")
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public MovieResponse deleteMoviebyId(@PathVariable String id) {
         return movieService.deleteMovieById(id);

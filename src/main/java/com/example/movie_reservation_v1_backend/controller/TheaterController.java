@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api/theaters")
 public class TheaterController {
 
     private final TheaterService theaterService;
@@ -19,20 +20,20 @@ public class TheaterController {
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("theater/create")
+    @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN')")
     public TheaterResponse createTheater(@RequestBody TheaterRequest theaterRequest) {
         return theaterService.createTheater(theaterRequest);
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("theater/all")
+    @GetMapping("/all")
     public List<TheaterResponse> getALlTheaters() {
         return theaterService.getAllTheaters();
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("theater/{id}")
+    @GetMapping("/{id}")
     public TheaterResponse getTheaterById(@PathVariable String id) {
         return theaterService.getTheaterById(id);
     }
