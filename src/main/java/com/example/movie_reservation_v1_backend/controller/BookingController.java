@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api/bookings")
 public class BookingController {
     private final BookingService bookingService;
 
@@ -20,40 +21,40 @@ public class BookingController {
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("booking/create")
+    @PostMapping("/create")
     public BookingResponse createBooking(@RequestBody BookingRequest request, @AuthenticationPrincipal UserDetails userDetails) {
         return bookingService.createBooking(userDetails.getUsername(), request);
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("booking/all")
+    @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
     public List<BookingResponse> getAllBookings() {
         return bookingService.getAllBookings();
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("booking/revenue")
+    @GetMapping("/revenue")
     @PreAuthorize("hasRole('ADMIN')")
     public double getTotalRevenue() {
         return bookingService.getTotalRevenue();
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("booking/my-bookings")
+    @GetMapping("/my-bookings")
     public List<BookingResponse> getAllBookingsOfUser(@AuthenticationPrincipal UserDetails userDetails) {
         String username = userDetails.getUsername();
         return bookingService.getAllBookingsOfUser(username);
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("booking/my-bookings/{bookingId}")
+    @GetMapping("/my-bookings/{bookingId}")
     public BookingResponse getBookingById(@PathVariable String bookingId, @AuthenticationPrincipal UserDetails userDetails) {
         return bookingService.getBookingById(userDetails.getUsername(), bookingId);
     }
 
     @ResponseStatus(HttpStatus.OK)
-    @PutMapping("booking/my-bookings/{bookingId}")
+    @PutMapping("/my-bookings/{bookingId}")
     public BookingResponse cancelBookingById(@PathVariable String bookingId, @AuthenticationPrincipal UserDetails userDetails) {
         return bookingService.cancelBookingById(userDetails.getUsername(), bookingId);
     }
