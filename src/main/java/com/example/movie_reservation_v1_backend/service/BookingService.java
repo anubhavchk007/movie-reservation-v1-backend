@@ -6,14 +6,14 @@ import com.example.movie_reservation_v1_backend.entity.Show;
 import com.example.movie_reservation_v1_backend.entity.booking.Booking;
 import com.example.movie_reservation_v1_backend.entity.booking.BookingStatus;
 import com.example.movie_reservation_v1_backend.entity.seat.SeatStatus;
+import com.example.movie_reservation_v1_backend.exception.NotFoundException;
+import com.example.movie_reservation_v1_backend.exception.SeatAlreadyBookedException;
 import com.example.movie_reservation_v1_backend.repository.BookingRepository;
 import com.example.movie_reservation_v1_backend.repository.ShowRepository;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -29,6 +29,7 @@ public class BookingService {
     @Transactional
     public BookingResponse createBooking(String username, BookingRequest request) {
         try {
+            checkValidRequest(request);
             Booking booking = new Booking(request);
             booking.setUsername(username);
             booking.setPrice(calculatePrice(request));
@@ -41,14 +42,21 @@ public class BookingService {
         }
     }
 
-    private double calculatePrice(BookingRequest request) {
+    private void checkValidRequest(BookingRequest request) {
         Show show = showRepository.findById(request.showId())
-                .orElseThrow(() -> new RuntimeException("Show not found!"));
-        double price = 0;
+                .orElseThrow(() -> new NotFoundException("Show not found."));
         for (String seatId : request.selectedSeatIds()) {
             if (show.getSeats().get(seatId).getStatus() == SeatStatus.BOOKED) {
-                throw new RuntimeException("Seats already booked.");
+                throw new SeatAlreadyBookedException("Selected seat(s) are already booked.");
             }
+        }
+    }
+
+    private double calculatePrice(BookingRequest request) {
+        Show show = showRepository.findById(request.showId())
+                .orElseThrow(() -> new NotFoundException("Show not found."));
+        double price = 0;
+        for (String seatId : request.selectedSeatIds()) {
             price += show.getSeats().get(seatId).getPrice();
             show.getSeats().get(seatId).setStatus(SeatStatus.BOOKED);
         }
@@ -58,28 +66,22 @@ public class BookingService {
 
     public List<BookingResponse> getAllBookingsOfUser(String username) {
         List<Booking> allBookings = bookingRepository.findAllByUsername(username);
-        List<BookingResponse> allBookingResponses = new ArrayList<>();
-        for (Booking booking : allBookings) {
-            allBookingResponses.add(new BookingResponse(booking));
-        }
-        return allBookingResponses;
+        return allBookings.stream()
+                .map(BookingResponse::new)
+                .toList();
     }
 
     public BookingResponse getBookingById(String username, String bookingId) {
         Booking booking = bookingRepository.findByIdAndUsername(bookingId, username)
-                .orElseThrow(() -> new RuntimeException("Booking not found."));
+                .orElseThrow(() -> new NotFoundException("Booking not found."));
         return new BookingResponse(booking);
-
     }
 
     public BookingResponse cancelBookingById(String username, String bookingId) {
         Booking booking = bookingRepository.findByIdAndUsername(bookingId, username)
-                .orElseThrow(() -> new RuntimeException("Booking not found."));
+                .orElseThrow(() -> new NotFoundException("Booking not found."));
         Show show = showRepository.findById(booking.getShowId())
-                .orElseThrow(() -> new RuntimeException("Show not found!"));
-        if (show.getEndTime().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Show is already over, booking can't be cancelled.");
-        }
+                .orElseThrow(() -> new NotFoundException("Show is already over, booking can't be cancelled."));
         releaseSeats(show, booking);
         booking.setStatus(BookingStatus.CANCELLED);
         bookingRepository.save(booking);
@@ -95,11 +97,9 @@ public class BookingService {
 
     public List<BookingResponse> getAllBookings() {
         List<Booking> allBookings = bookingRepository.findAll();
-        List<BookingResponse> allBookingResponses = new ArrayList<>();
-        for (Booking booking : allBookings) {
-            allBookingResponses.add(new BookingResponse(booking));
-        }
-        return allBookingResponses;
+        return allBookings.stream()
+                .map(BookingResponse::new)
+                .toList();
     }
 
     public double getTotalRevenue() {
