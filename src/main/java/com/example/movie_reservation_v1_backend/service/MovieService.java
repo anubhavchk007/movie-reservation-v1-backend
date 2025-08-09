@@ -3,10 +3,10 @@ package com.example.movie_reservation_v1_backend.service;
 import com.example.movie_reservation_v1_backend.dto.movie.MovieRequest;
 import com.example.movie_reservation_v1_backend.dto.movie.MovieResponse;
 import com.example.movie_reservation_v1_backend.entity.Movie;
+import com.example.movie_reservation_v1_backend.exception.NotFoundException;
 import com.example.movie_reservation_v1_backend.repository.MovieRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -26,40 +26,34 @@ public class MovieService {
 
     public List<MovieResponse> getAllMovies() {
         List<Movie> allMovies = movieRepository.findAll();
-        List<MovieResponse> allMoviesResponse = new ArrayList<>();
-        for (Movie movie : allMovies) {
-            allMoviesResponse.add(new MovieResponse(movie));
-        }
-        return allMoviesResponse;
+        return allMovies.stream()
+                .map(MovieResponse::new)
+                .toList();
     }
 
     public List<MovieResponse> getMovieByTitle(String title) {
         List<Movie> allMovies = movieRepository.findAllByTitle(title);
-        List<MovieResponse> allMoviesResponse = new ArrayList<>();
-        for (Movie movie : allMovies) {
-            allMoviesResponse.add(new MovieResponse(movie));
-        }
-        return allMoviesResponse;
+        return allMovies.stream()
+                .map(MovieResponse::new)
+                .toList();
     }
 
     public List<MovieResponse> getAllMoviesByGenre(String genre) {
         List<Movie> allMovies = movieRepository.findAllByGenre(genre);
-        List<MovieResponse> allMoviesResponse = new ArrayList<>();
-        for (Movie movie : allMovies) {
-            allMoviesResponse.add(new MovieResponse(movie));
-        }
-        return allMoviesResponse;
+        return allMovies.stream()
+                .map(MovieResponse::new)
+                .toList();
     }
 
     public MovieResponse getMovieById(String id) {
-        Movie movie =  movieRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Movie Not found"));
+        Movie movie = movieRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Movie not found."));
         return new MovieResponse(movie);
     }
 
     public MovieResponse updateMovieById(String id, MovieRequest movieRequest) {
-        Movie movie =  movieRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Movie Not found"));
+        Movie movie = movieRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Movie not found."));
         movie.setTitle(movieRequest.title());
         movie.setDescription(movieRequest.description());
         movie.setGenre(movieRequest.genre());
@@ -73,7 +67,7 @@ public class MovieService {
 
     public MovieResponse deleteMovieById(String id) {
         Movie movie =  movieRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Movie Not found"));
+                .orElseThrow(() -> new NotFoundException("Movie not found."));
         movieRepository.deleteById(id);
         return new MovieResponse(movie);
     }

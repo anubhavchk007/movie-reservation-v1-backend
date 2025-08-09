@@ -27,7 +27,8 @@ public class ShowCleanupScheduler {
 
         if (delay <= 0) {
             showRepository.deleteById(show.getId());
-            throw new RuntimeException("Show in past");
+            System.out.println("Deleted show: " + show.getId() + " at " + LocalDateTime.now());
+            return;
         }
         scheduler.schedule(() -> {
            showRepository.deleteById(show.getId());

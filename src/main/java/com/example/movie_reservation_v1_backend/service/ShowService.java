@@ -7,6 +7,7 @@ import com.example.movie_reservation_v1_backend.entity.Show;
 import com.example.movie_reservation_v1_backend.entity.Theater;
 import com.example.movie_reservation_v1_backend.entity.seat.Seat;
 import com.example.movie_reservation_v1_backend.entity.seat.SeatStatus;
+import com.example.movie_reservation_v1_backend.exception.NotFoundException;
 import com.example.movie_reservation_v1_backend.repository.MovieRepository;
 import com.example.movie_reservation_v1_backend.repository.ShowRepository;
 import com.example.movie_reservation_v1_backend.repository.TheaterRepository;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -33,9 +33,9 @@ public class ShowService {
 
     public ShowResponse createShow(ShowRequest showRequest) {
         Movie movie = movieRepository.findById(showRequest.movieId())
-                .orElseThrow(() -> new RuntimeException("Movie not found."));
+                .orElseThrow(() -> new NotFoundException("Movie not found."));
         Theater theater = theaterRepository.findById(showRequest.theaterId())
-                .orElseThrow(() -> new RuntimeException("Theater doesn't exist."));
+                .orElseThrow(() -> new NotFoundException("Theater doesn't exist."));
         Show show = new Show(showRequest);
         show.setMovie(movie);
         show.setTheater(theater);
@@ -47,40 +47,34 @@ public class ShowService {
 
     public List<ShowResponse> getAllShows() {
         List<Show> allShows = showRepository.findAll();
-        List<ShowResponse> allShowsResponse = new ArrayList<>();
-        for (Show show : allShows) {
-            allShowsResponse.add(new ShowResponse(show));
-        }
-        return allShowsResponse;
+        return allShows.stream()
+                .map(ShowResponse::new)
+                .toList();
     }
 
     public ShowResponse getShowById(String id) {
         Show show = showRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Show not found."));
+                .orElseThrow(() -> new NotFoundException("Show not found."));
         return new ShowResponse(show);
     }
 
     public List<ShowResponse> getAllShowsByMovie(String movieId) {
         List<Show> allShows = showRepository.findAllShowsByMovieId(movieId);
-        List<ShowResponse> allShowsResponse = new ArrayList<>();
-        for (Show show : allShows) {
-            allShowsResponse.add(new ShowResponse(show));
-        }
-        return allShowsResponse;
+        return allShows.stream()
+                .map(ShowResponse::new)
+                .toList();
     }
 
     public List<ShowResponse> getAllShowsByTheater(String theaterId) {
         List<Show> allShows = showRepository.findAllShowsByTheaterId(theaterId);
-        List<ShowResponse> allShowsResponse = new ArrayList<>();
-        for (Show show : allShows) {
-            allShowsResponse.add(new ShowResponse(show));
-        }
-        return allShowsResponse;
+        return allShows.stream()
+                .map(ShowResponse::new)
+                .toList();
     }
 
     public ShowResponse updateShowById(String id, ShowRequest showRequest) {
         Show show = showRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Show not found."));
+                .orElseThrow(() -> new NotFoundException("Show not found."));
         show.setStartTime(showRequest.startTime());
         show.setEndTime(showRequest.endTime());
         showRepository.save(show);
@@ -89,7 +83,7 @@ public class ShowService {
 
     public ShowResponse deleteShowById(String id) {
         Show show = showRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Show not found."));
+                .orElseThrow(() -> new NotFoundException("Show not found."));
         showRepository.delete(show);
         return new ShowResponse(show);
     }
@@ -107,6 +101,9 @@ public class ShowService {
     public List<ShowResponse> getAllShowsByDate(LocalDate date) {
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = date.atTime(23, 59, 59);
-        return showRepository.findByStartTimeBetween(startOfDay, endOfDay);
+        List<Show> allShows = showRepository.findByStartTimeBetween(startOfDay, endOfDay);
+        return allShows.stream()
+                .map(ShowResponse::new)
+                .toList();
     }
 }
